@@ -2,6 +2,7 @@
 #include "vulkan/Instance.hpp"
 #include "vulkan/Device.hpp"
 #include "vulkan/Swapchain.hpp"
+#include "renderer/Renderer.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -18,16 +19,25 @@ int main() {
 
         VkSurfaceKHR surface = window.createSurface(instance.handle());
 
-        vulkan::Device device(instance.handle(), surface);
-        vulkan::Swapchain swapchain(device, surface, window.width(), window.height());
+        {
+            vulkan::Device device(instance.handle(), surface);
+            vulkan::Swapchain swapchain(device, surface, window.width(), window.height());
+            renderer::Renderer renderer(device, swapchain);
 
-        cout << "Initialization complete. Press ESC to exit." << endl;
+            cout << "Initialization complete. Press ESC to exit." << endl;
 
-        while (!window.shouldClose()) {
-            window.pollEvents();
+            while (!window.shouldClose()) {
+                window.pollEvents();
+
+                if (renderer.beginFrame()) {
+                    // Future: draw commands go here
+                    renderer.endFrame();
+                }
+            }
+
+            device.waitIdle();
+            // renderer, swapchain, device destroyed here (RAII)
         }
-
-        device.waitIdle();
 
         vkDestroySurfaceKHR(instance.handle(), surface, nullptr);
 

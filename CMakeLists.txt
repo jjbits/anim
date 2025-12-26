@@ -65,6 +65,12 @@ set(ANIM_SOURCES
     src/vulkan/Instance.cpp
     src/vulkan/Device.cpp
     src/vulkan/Swapchain.cpp
+    src/vulkan/Sync.cpp
+    src/vulkan/CommandPool.cpp
+    src/vulkan/CommandBuffer.cpp
+    src/vulkan/RenderPass.cpp
+    src/vulkan/Framebuffer.cpp
+    src/renderer/Renderer.cpp
 )
 
 # =============================================================================
