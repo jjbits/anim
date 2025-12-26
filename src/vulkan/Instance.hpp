@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 class Instance {
 public:
@@ -36,4 +36,4 @@ private:
     bool validationLayers = false;
 };
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan

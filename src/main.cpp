@@ -1,7 +1,7 @@
 #include "core/Window.hpp"
-#include "vkengine/Instance.hpp"
-#include "vkengine/Device.hpp"
-#include "vkengine/Swapchain.hpp"
+#include "vulkan/Instance.hpp"
+#include "vulkan/Device.hpp"
+#include "vulkan/Swapchain.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -14,12 +14,12 @@ int main() {
         core::Window window("Anim Engine", 1280, 720);
 
         auto extensions = window.getRequiredVulkanExtensions();
-        vkengine::Instance instance("Anim", extensions);
+        vulkan::Instance instance("Anim", extensions);
 
         VkSurfaceKHR surface = window.createSurface(instance.handle());
 
-        vkengine::Device device(instance.handle(), surface);
-        vkengine::Swapchain swapchain(device, surface, window.width(), window.height());
+        vulkan::Device device(instance.handle(), surface);
+        vulkan::Swapchain swapchain(device, surface, window.width(), window.height());
 
         cout << "Initialization complete. Press ESC to exit." << endl;
 

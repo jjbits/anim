@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 class Swapchain {
 public:
@@ -49,4 +49,4 @@ private:
     VkExtent2D swapExtent;
 };
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan

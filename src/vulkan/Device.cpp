@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 const vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -191,4 +191,4 @@ bool Device::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
     return requiredExtensions.empty();
 }
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan

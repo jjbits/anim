@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 Swapchain::Swapchain(Device& device, VkSurfaceKHR surface, uint32_t width, uint32_t height)
     : deviceRef(&device), surfaceRef(surface) {
@@ -205,4 +205,4 @@ VkExtent2D Swapchain::chooseExtent(const VkSurfaceCapabilitiesKHR& capabilities,
     return extent;
 }
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan

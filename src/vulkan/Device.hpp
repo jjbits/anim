@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 struct QueueFamilyIndices {
     optional<uint32_t> graphics;
@@ -52,4 +52,4 @@ private:
     QueueFamilyIndices queueFamilies;
 };
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan

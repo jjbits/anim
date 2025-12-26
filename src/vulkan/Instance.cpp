@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace anim::vkengine {
+namespace anim::vulkan {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -173,4 +173,4 @@ bool Instance::checkValidationLayerSupport() {
     return false;
 }
 
-} // namespace anim::vkengine
+} // namespace anim::vulkan
