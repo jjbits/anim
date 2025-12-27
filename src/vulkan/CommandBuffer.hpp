@@ -38,6 +38,8 @@ public:
     void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
     void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+    void bindDescriptorSet(VkPipelineLayout layout, VkDescriptorSet descriptorSet,
+                           VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
     void bindVertexBuffer(VkBuffer buffer, VkDeviceSize offset = 0);
     void bindIndexBuffer(VkBuffer buffer, VkIndexType indexType = VK_INDEX_TYPE_UINT32, VkDeviceSize offset = 0);
 

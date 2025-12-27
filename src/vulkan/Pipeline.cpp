@@ -10,7 +10,8 @@ Pipeline::Pipeline(Device& device, VkRenderPass renderPass,
                    const vector<uint32_t>& vertShaderCode,
                    const vector<uint32_t>& fragShaderCode,
                    const vector<VkVertexInputBindingDescription>& vertexBindings,
-                   const vector<VkVertexInputAttributeDescription>& vertexAttribs)
+                   const vector<VkVertexInputAttributeDescription>& vertexAttribs,
+                   const vector<VkDescriptorSetLayout>& descriptorLayouts)
     : deviceRef(&device) {
 
     VkShaderModule vertModule = createShaderModule(vertShaderCode);
@@ -65,10 +66,10 @@ Pipeline::Pipeline(Device& device, VkRenderPass renderPass,
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     // Multisampling
@@ -93,7 +94,8 @@ Pipeline::Pipeline(Device& device, VkRenderPass renderPass,
     // Pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorLayouts.size());
+    pipelineLayoutInfo.pSetLayouts = descriptorLayouts.empty() ? nullptr : descriptorLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
 
     if (vkCreatePipelineLayout(deviceRef->handle(), &pipelineLayoutInfo,

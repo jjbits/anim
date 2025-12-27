@@ -72,7 +72,12 @@ set(ANIM_SOURCES
     src/vulkan/Framebuffer.cpp
     src/vulkan/Buffer.cpp
     src/vulkan/Pipeline.cpp
+    src/vulkan/Image.cpp
+    src/vulkan/DescriptorSet.cpp
     src/renderer/Renderer.cpp
+    src/renderer/Mesh.cpp
+    src/renderer/ModelLoader.cpp
+    src/renderer/Scene.cpp
 )
 
 # =============================================================================

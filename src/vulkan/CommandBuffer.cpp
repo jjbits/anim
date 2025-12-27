@@ -103,6 +103,11 @@ void CommandBuffer::bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPo
     vkCmdBindPipeline(buffer, bindPoint, pipeline);
 }
 
+void CommandBuffer::bindDescriptorSet(VkPipelineLayout layout, VkDescriptorSet descriptorSet,
+                                       VkPipelineBindPoint bindPoint) {
+    vkCmdBindDescriptorSets(buffer, bindPoint, layout, 0, 1, &descriptorSet, 0, nullptr);
+}
+
 void CommandBuffer::bindVertexBuffer(VkBuffer vertexBuffer, VkDeviceSize offset) {
     VkBuffer buffers[] = {vertexBuffer};
     VkDeviceSize offsets[] = {offset};

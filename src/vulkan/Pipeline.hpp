@@ -16,7 +16,8 @@ public:
              const vector<uint32_t>& vertShaderCode,
              const vector<uint32_t>& fragShaderCode,
              const vector<VkVertexInputBindingDescription>& vertexBindings,
-             const vector<VkVertexInputAttributeDescription>& vertexAttribs);
+             const vector<VkVertexInputAttributeDescription>& vertexAttribs,
+             const vector<VkDescriptorSetLayout>& descriptorLayouts = {});
     ~Pipeline();
 
     // Non-copyable
