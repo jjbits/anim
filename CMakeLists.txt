@@ -41,7 +41,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     VulkanMemoryAllocator
     GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-    GIT_TAG v3.1.0
+    GIT_TAG v3.3.0
     GIT_SHALLOW TRUE
 )
 
@@ -70,6 +70,8 @@ set(ANIM_SOURCES
     src/vulkan/CommandBuffer.cpp
     src/vulkan/RenderPass.cpp
     src/vulkan/Framebuffer.cpp
+    src/vulkan/Buffer.cpp
+    src/vulkan/Pipeline.cpp
     src/renderer/Renderer.cpp
 )
 

@@ -37,6 +37,15 @@ public:
                      float minDepth = 0.0f, float maxDepth = 1.0f);
     void setScissor(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
+    void bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+    void bindVertexBuffer(VkBuffer buffer, VkDeviceSize offset = 0);
+    void bindIndexBuffer(VkBuffer buffer, VkIndexType indexType = VK_INDEX_TYPE_UINT32, VkDeviceSize offset = 0);
+
+    void draw(uint32_t vertexCount, uint32_t instanceCount = 1,
+              uint32_t firstVertex = 0, uint32_t firstInstance = 0);
+    void drawIndexed(uint32_t indexCount, uint32_t instanceCount = 1,
+                     uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
+
 private:
     CommandPool* poolRef = nullptr;
     VkCommandBuffer buffer = VK_NULL_HANDLE;

@@ -1,3 +1,4 @@
+#define VMA_IMPLEMENTATION
 #include "Device.hpp"
 
 #include <iostream>
@@ -18,10 +19,14 @@ const vector<const char*> deviceExtensions = {
 Device::Device(VkInstance instance, VkSurfaceKHR surface) {
     pickPhysicalDevice(instance, surface);
     createLogicalDevice(surface);
+    createAllocator(instance);
     cout << "Vulkan device created" << endl;
 }
 
 Device::~Device() {
+    if (vmaAllocator != VK_NULL_HANDLE) {
+        vmaDestroyAllocator(vmaAllocator);
+    }
     if (device != VK_NULL_HANDLE) {
         vkDestroyDevice(device, nullptr);
     }
@@ -32,15 +37,20 @@ Device::Device(Device&& other) noexcept
     , device(other.device)
     , graphicsQ(other.graphicsQ)
     , presentQ(other.presentQ)
+    , vmaAllocator(other.vmaAllocator)
     , queueFamilies(other.queueFamilies) {
     other.physical = VK_NULL_HANDLE;
     other.device = VK_NULL_HANDLE;
     other.graphicsQ = VK_NULL_HANDLE;
     other.presentQ = VK_NULL_HANDLE;
+    other.vmaAllocator = VK_NULL_HANDLE;
 }
 
 Device& Device::operator=(Device&& other) noexcept {
     if (this != &other) {
+        if (vmaAllocator != VK_NULL_HANDLE) {
+            vmaDestroyAllocator(vmaAllocator);
+        }
         if (device != VK_NULL_HANDLE) {
             vkDestroyDevice(device, nullptr);
         }
@@ -49,12 +59,14 @@ Device& Device::operator=(Device&& other) noexcept {
         device = other.device;
         graphicsQ = other.graphicsQ;
         presentQ = other.presentQ;
+        vmaAllocator = other.vmaAllocator;
         queueFamilies = other.queueFamilies;
 
         other.physical = VK_NULL_HANDLE;
         other.device = VK_NULL_HANDLE;
         other.graphicsQ = VK_NULL_HANDLE;
         other.presentQ = VK_NULL_HANDLE;
+        other.vmaAllocator = VK_NULL_HANDLE;
     }
     return *this;
 }
@@ -189,6 +201,18 @@ bool Device::checkDeviceExtensionSupport(VkPhysicalDevice dev) {
     }
 
     return requiredExtensions.empty();
+}
+
+void Device::createAllocator(VkInstance instance) {
+    VmaAllocatorCreateInfo allocatorInfo{};
+    allocatorInfo.physicalDevice = physical;
+    allocatorInfo.device = device;
+    allocatorInfo.instance = instance;
+    allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_4;
+
+    if (vmaCreateAllocator(&allocatorInfo, &vmaAllocator) != VK_SUCCESS) {
+        throw runtime_error("Failed to create VMA allocator");
+    }
 }
 
 } // namespace anim::vulkan

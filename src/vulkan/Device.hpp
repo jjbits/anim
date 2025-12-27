@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 #include <vector>
 #include <optional>
@@ -35,12 +36,14 @@ public:
     VkQueue presentQueue() const { return presentQ; }
     uint32_t graphicsQueueFamily() const { return queueFamilies.graphics.value(); }
     uint32_t presentQueueFamily() const { return queueFamilies.present.value(); }
+    VmaAllocator allocator() const { return vmaAllocator; }
 
     void waitIdle() const;
 
 private:
     void pickPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
     void createLogicalDevice(VkSurfaceKHR surface);
+    void createAllocator(VkInstance instance);
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -49,6 +52,7 @@ private:
     VkDevice device = VK_NULL_HANDLE;
     VkQueue graphicsQ = VK_NULL_HANDLE;
     VkQueue presentQ = VK_NULL_HANDLE;
+    VmaAllocator vmaAllocator = VK_NULL_HANDLE;
     QueueFamilyIndices queueFamilies;
 };
 

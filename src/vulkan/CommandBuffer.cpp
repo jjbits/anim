@@ -99,4 +99,28 @@ void CommandBuffer::setScissor(int32_t x, int32_t y, uint32_t width, uint32_t he
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 }
 
+void CommandBuffer::bindPipeline(VkPipeline pipeline, VkPipelineBindPoint bindPoint) {
+    vkCmdBindPipeline(buffer, bindPoint, pipeline);
+}
+
+void CommandBuffer::bindVertexBuffer(VkBuffer vertexBuffer, VkDeviceSize offset) {
+    VkBuffer buffers[] = {vertexBuffer};
+    VkDeviceSize offsets[] = {offset};
+    vkCmdBindVertexBuffers(buffer, 0, 1, buffers, offsets);
+}
+
+void CommandBuffer::bindIndexBuffer(VkBuffer indexBuffer, VkIndexType indexType, VkDeviceSize offset) {
+    vkCmdBindIndexBuffer(buffer, indexBuffer, offset, indexType);
+}
+
+void CommandBuffer::draw(uint32_t vertexCount, uint32_t instanceCount,
+                          uint32_t firstVertex, uint32_t firstInstance) {
+    vkCmdDraw(buffer, vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void CommandBuffer::drawIndexed(uint32_t indexCount, uint32_t instanceCount,
+                                  uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) {
+    vkCmdDrawIndexed(buffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
 } // namespace anim::vulkan
