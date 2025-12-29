@@ -12,7 +12,15 @@ using namespace std;
 
 namespace anim::renderer {
 
-vector<unique_ptr<Mesh>> ModelLoader::load(vulkan::Device& device, const string& path) {
+// Helper to get image index from a texture info
+static int getImageIndex(const tinygltf::Model& model, int textureIndex) {
+    if (textureIndex < 0 || textureIndex >= static_cast<int>(model.textures.size())) {
+        return -1;
+    }
+    return model.textures[textureIndex].source;
+}
+
+LoadedModel ModelLoader::load(vulkan::Device& device, vulkan::CommandPool& cmdPool, const string& path) {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     string err, warn;
@@ -34,8 +42,61 @@ vector<unique_ptr<Mesh>> ModelLoader::load(vulkan::Device& device, const string&
         throw runtime_error("Failed to load glTF: " + path);
     }
 
-    vector<unique_ptr<Mesh>> meshes;
+    LoadedModel result;
 
+    // Load all images as textures
+    for (const auto& image : model.images) {
+        if (image.image.empty()) {
+            cout << "Skipping empty image" << endl;
+            result.textures.push_back(nullptr);
+            continue;
+        }
+
+        result.textures.push_back(make_unique<Texture>(
+            device, cmdPool,
+            image.width, image.height,
+            image.image.data()
+        ));
+        cout << "Loaded texture: " << image.width << "x" << image.height << endl;
+    }
+
+    // Load materials
+    for (const auto& mat : model.materials) {
+        LoadedMaterial loadedMat;
+
+        // Base color
+        const auto& pbr = mat.pbrMetallicRoughness;
+        loadedMat.baseColorTexture = getImageIndex(model, pbr.baseColorTexture.index);
+        loadedMat.baseColorFactor = glm::vec4(
+            pbr.baseColorFactor[0],
+            pbr.baseColorFactor[1],
+            pbr.baseColorFactor[2],
+            pbr.baseColorFactor[3]
+        );
+
+        // Metallic-roughness
+        loadedMat.metallicRoughnessTexture = getImageIndex(model, pbr.metallicRoughnessTexture.index);
+        loadedMat.metallicFactor = static_cast<float>(pbr.metallicFactor);
+        loadedMat.roughnessFactor = static_cast<float>(pbr.roughnessFactor);
+
+        // Normal map
+        loadedMat.normalTexture = getImageIndex(model, mat.normalTexture.index);
+
+        // Occlusion
+        loadedMat.occlusionTexture = getImageIndex(model, mat.occlusionTexture.index);
+
+        // Emissive
+        loadedMat.emissiveTexture = getImageIndex(model, mat.emissiveTexture.index);
+        loadedMat.emissiveFactor = glm::vec3(
+            mat.emissiveFactor[0],
+            mat.emissiveFactor[1],
+            mat.emissiveFactor[2]
+        );
+
+        result.materials.push_back(loadedMat);
+    }
+
+    // Load meshes
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
             if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
@@ -45,7 +106,6 @@ vector<unique_ptr<Mesh>> ModelLoader::load(vulkan::Device& device, const string&
             vector<Vertex> vertices;
             vector<uint32_t> indices;
 
-            // Get accessors
             const float* positions = nullptr;
             const float* normals = nullptr;
             const float* texcoords = nullptr;
@@ -144,19 +204,24 @@ vector<unique_ptr<Mesh>> ModelLoader::load(vulkan::Device& device, const string&
                         throw runtime_error("Unsupported index component type");
                 }
             } else {
-                // No indices - generate sequential
                 indices.resize(vertexCount);
                 for (size_t i = 0; i < vertexCount; i++) {
                     indices[i] = static_cast<uint32_t>(i);
                 }
             }
 
-            meshes.push_back(make_unique<Mesh>(device, vertices, indices));
+            LoadedMesh loadedMesh;
+            loadedMesh.mesh = make_unique<Mesh>(device, vertices, indices);
+            loadedMesh.materialIndex = primitive.material;
+
+            result.meshes.push_back(std::move(loadedMesh));
         }
     }
 
-    cout << "Loaded " << meshes.size() << " mesh(es) from " << path << endl;
-    return meshes;
+    cout << "Loaded " << result.meshes.size() << " mesh(es), "
+         << result.textures.size() << " texture(s), "
+         << result.materials.size() << " material(s) from " << path << endl;
+    return result;
 }
 
 } // namespace anim::renderer

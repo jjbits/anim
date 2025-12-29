@@ -10,7 +10,12 @@ Renderer::Renderer(vulkan::Device& device, vulkan::Swapchain& swapchain)
     : device_(&device)
     , swapchain_(&swapchain) {
 
-    renderPass_ = make_unique<vulkan::RenderPass>(device, swapchain.imageFormat());
+    // Initialize clear values
+    clearValues_[0].color = {{0.39f, 0.58f, 0.93f, 1.0f}};  // Cornflower blue
+    clearValues_[1].depthStencil = {1.0f, 0};  // Far depth
+
+    createDepthResources();
+    renderPass_ = make_unique<vulkan::RenderPass>(device, swapchain.imageFormat(), DEPTH_FORMAT);
     createFramebuffers();
 
     commandPool_ = make_unique<vulkan::CommandPool>(device, device.graphicsQueueFamily());
@@ -40,11 +45,21 @@ Renderer::~Renderer() {
     }
 }
 
+void Renderer::createDepthResources() {
+    VkExtent2D extent = swapchain_->extent();
+    depthImage_ = make_unique<vulkan::Image>(
+        *device_, extent.width, extent.height, DEPTH_FORMAT,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+}
+
 void Renderer::createFramebuffers() {
     framebuffers_.clear();
     for (auto view : swapchain_->imageViews()) {
+        vector<VkImageView> attachments = {view, depthImage_->view()};
         framebuffers_.push_back(
-            make_unique<vulkan::Framebuffer>(*device_, *renderPass_, view, swapchain_->extent())
+            make_unique<vulkan::Framebuffer>(*device_, *renderPass_, attachments, swapchain_->extent())
         );
     }
 }
@@ -77,7 +92,7 @@ bool Renderer::beginFrame() {
         renderPass_->handle(),
         framebuffers_[imageIndex_]->handle(),
         swapchain_->extent(),
-        &clearColor_, 1);
+        clearValues_.data(), static_cast<uint32_t>(clearValues_.size()));
 
     return true;
 }
@@ -120,7 +135,7 @@ void Renderer::endFrame() {
 }
 
 void Renderer::setClearColor(float r, float g, float b, float a) {
-    clearColor_ = {{{r, g, b, a}}};
+    clearValues_[0].color = {{r, g, b, a}};
 }
 
 } // namespace anim::renderer

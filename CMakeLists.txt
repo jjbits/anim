@@ -74,10 +74,12 @@ set(ANIM_SOURCES
     src/vulkan/Pipeline.cpp
     src/vulkan/Image.cpp
     src/vulkan/DescriptorSet.cpp
+    src/vulkan/Sampler.cpp
     src/renderer/Renderer.cpp
     src/renderer/Mesh.cpp
     src/renderer/ModelLoader.cpp
     src/renderer/Scene.cpp
+    src/renderer/Texture.cpp
 )
 
 # =============================================================================

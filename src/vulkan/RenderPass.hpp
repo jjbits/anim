@@ -10,8 +10,8 @@ namespace anim::vulkan {
 
 class RenderPass {
 public:
-    // Creates a simple render pass with one color attachment
-    RenderPass(Device& device, VkFormat colorFormat,
+    // Creates a render pass with color and optional depth attachment
+    RenderPass(Device& device, VkFormat colorFormat, VkFormat depthFormat = VK_FORMAT_UNDEFINED,
                VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                VkImageLayout finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     ~RenderPass();
@@ -25,10 +25,12 @@ public:
     RenderPass& operator=(RenderPass&& other) noexcept;
 
     VkRenderPass handle() const { return renderPass; }
+    bool hasDepth() const { return hasDepthAttachment; }
 
 private:
     Device* deviceRef = nullptr;
     VkRenderPass renderPass = VK_NULL_HANDLE;
+    bool hasDepthAttachment = false;
 };
 
 } // namespace anim::vulkan

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Mesh.hpp"
+#include "Texture.hpp"
 #include "ModelLoader.hpp"
 #include "../vulkan/Device.hpp"
 #include "../vulkan/Pipeline.hpp"
 #include "../vulkan/Buffer.hpp"
 #include "../vulkan/DescriptorSet.hpp"
+#include "../vulkan/CommandPool.hpp"
 
 #include <glm/glm.hpp>
 
@@ -37,20 +39,29 @@ private:
     void loadShaders();
     void createDescriptors();
     void createPipeline(VkRenderPass renderPass);
+    void createDefaultTexture();
 
     vulkan::Device* deviceRef;
     VkRenderPass renderPassRef;
 
+    unique_ptr<vulkan::CommandPool> commandPool;
     unique_ptr<vulkan::Pipeline> pipeline;
     unique_ptr<vulkan::Buffer> uniformBuffer;
     unique_ptr<vulkan::DescriptorSetLayout> descriptorLayout;
     unique_ptr<vulkan::DescriptorPool> descriptorPool;
-    unique_ptr<vulkan::DescriptorSet> descriptorSet;
+    vector<unique_ptr<vulkan::DescriptorSet>> materialDescriptorSets;
+    unique_ptr<vulkan::DescriptorSet> defaultDescriptorSet;
 
     vector<uint32_t> vertShaderCode;
     vector<uint32_t> fragShaderCode;
 
-    vector<unique_ptr<Mesh>> meshes;
+    // Loaded model data
+    vector<LoadedMesh> loadedMeshes;
+    vector<unique_ptr<Texture>> textures;
+    vector<LoadedMaterial> materials;
+
+    // Default white texture for meshes without textures
+    unique_ptr<Texture> defaultTexture;
 };
 
 } // namespace anim::renderer

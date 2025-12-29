@@ -4,6 +4,7 @@
 #include "RenderPass.hpp"
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ namespace anim::vulkan {
 class Framebuffer {
 public:
     Framebuffer(Device& device, RenderPass& renderPass,
-                VkImageView imageView, VkExtent2D extent);
+                const vector<VkImageView>& attachments, VkExtent2D extent);
     ~Framebuffer();
 
     // Non-copyable

@@ -7,14 +7,15 @@
 #include "vulkan/CommandBuffer.hpp"
 #include "vulkan/RenderPass.hpp"
 #include "vulkan/Framebuffer.hpp"
+#include "vulkan/Image.hpp"
 
 #include <vector>
 #include <memory>
+#include <array>
 
 using namespace std;
 
 namespace anim::renderer {
-
 
 class Renderer {
 public:
@@ -37,12 +38,14 @@ public:
     void setClearColor(float r, float g, float b, float a = 1.0f);
 
 private:
+    void createDepthResources();
     void createFramebuffers();
 
     vulkan::Device* device_;
     vulkan::Swapchain* swapchain_;
 
     unique_ptr<vulkan::RenderPass> renderPass_;
+    unique_ptr<vulkan::Image> depthImage_;
     vector<unique_ptr<vulkan::Framebuffer>> framebuffers_;
     unique_ptr<vulkan::CommandPool> commandPool_;
     vector<unique_ptr<vulkan::CommandBuffer>> commandBuffers_;
@@ -56,7 +59,9 @@ private:
     uint32_t currentFrame_ = 0;  // Cycles 0 to MAX_FRAMES_IN_FLIGHT-1, indexes sync objects
     uint32_t imageIndex_ = 0;    // Set by acquireNextImage, indexes framebuffers
     bool frameStarted_ = false;
-    VkClearValue clearColor_ = {{{0.39f, 0.58f, 0.93f, 1.0f}}};  // Cornflower blue
+
+    array<VkClearValue, 2> clearValues_;
+    static constexpr VkFormat DEPTH_FORMAT = VK_FORMAT_D32_SFLOAT;
 };
 
 } // namespace anim::renderer

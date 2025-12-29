@@ -7,14 +7,14 @@ using namespace std;
 namespace anim::vulkan {
 
 Framebuffer::Framebuffer(Device& device, RenderPass& renderPass,
-                         VkImageView imageView, VkExtent2D extent)
+                         const vector<VkImageView>& attachments, VkExtent2D extent)
     : deviceRef(&device), fbExtent(extent) {
 
     VkFramebufferCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     createInfo.renderPass = renderPass.handle();
-    createInfo.attachmentCount = 1;
-    createInfo.pAttachments = &imageView;
+    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    createInfo.pAttachments = attachments.data();
     createInfo.width = extent.width;
     createInfo.height = extent.height;
     createInfo.layers = 1;

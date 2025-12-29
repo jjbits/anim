@@ -48,6 +48,12 @@ public:
     void drawIndexed(uint32_t indexCount, uint32_t instanceCount = 1,
                      uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
 
+    void copyBufferToImage(VkBuffer buffer, VkImage image,
+                           uint32_t width, uint32_t height);
+    void transitionImageLayout(VkImage image, VkFormat format,
+                               VkImageLayout oldLayout, VkImageLayout newLayout,
+                               uint32_t mipLevels = 1);
+
 private:
     CommandPool* poolRef = nullptr;
     VkCommandBuffer buffer = VK_NULL_HANDLE;
