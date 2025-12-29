@@ -48,9 +48,10 @@ void Scene::loadShaders() {
 }
 
 void Scene::createDefaultTexture() {
-    // Create a 1x1 white texture as fallback
-    uint32_t white = 0xFFFFFFFF;
-    defaultTexture = make_unique<Texture>(*deviceRef, *commandPool, 1, 1, &white);
+    // Create a 1x1 flat normal texture as fallback (RGB = 127, 127, 255 = tangent space "up")
+    // This works for both color (grayish) and normal maps (no perturbation)
+    uint32_t flatNormal = 0xFFFF7F7F;  // ABGR format: A=255, B=255, G=127, R=127
+    defaultTexture = make_unique<Texture>(*deviceRef, *commandPool, 1, 1, &flatNormal);
 }
 
 void Scene::createDescriptors() {

@@ -21,6 +21,22 @@ layout(binding = 5) uniform sampler2D emissiveTex;
 
 const float PI = 3.14159265359;
 
+// Compute TBN matrix from derivatives (when tangents not in vertex data)
+mat3 computeTBN(vec3 N, vec3 pos, vec2 uv) {
+    vec3 dp1 = dFdx(pos);
+    vec3 dp2 = dFdy(pos);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+
+    vec3 dp2perp = cross(dp2, N);
+    vec3 dp1perp = cross(N, dp1);
+    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+
+    float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
+    return mat3(T * invmax, B * invmax, N);
+}
+
 // Normal Distribution Function (GGX/Trowbridge-Reitz)
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a = roughness * roughness;
@@ -73,8 +89,12 @@ void main() {
     float ao = texture(occlusionTex, fragUV).r;
     vec3 emissive = texture(emissiveTex, fragUV).rgb;
 
-    // Normal (use geometry normal for now, skip tangent-space normal mapping)
-    vec3 N = normalize(fragNormal);
+    // Sample normal map and transform to world space
+    vec3 geomNormal = normalize(fragNormal);
+    vec3 normalMap = texture(normalTex, fragUV).rgb * 2.0 - 1.0;  // [0,1] -> [-1,1]
+    mat3 TBN = computeTBN(geomNormal, fragPosition, fragUV);
+    vec3 N = normalize(TBN * normalMap);
+
     vec3 V = normalize(ubo.camPos - fragPosition);
 
     // F0 for dielectrics is 0.04, for metals use albedo
