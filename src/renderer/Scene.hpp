@@ -19,6 +19,11 @@ using namespace std;
 
 namespace anim::renderer {
 
+struct CameraData {
+    glm::mat4 view;
+    glm::vec3 position;
+};
+
 class Scene {
 public:
     Scene(vulkan::Device& device, VkRenderPass renderPass);
@@ -32,7 +37,7 @@ public:
     void loadModel(const string& path);
     void addTriangle();
 
-    void update(float time, float aspect);
+    void update(float time, float aspect, const CameraData& camera);
     void render(VkCommandBuffer cmd);
 
 private:

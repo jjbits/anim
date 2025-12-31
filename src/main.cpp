@@ -1,4 +1,5 @@
 #include "core/Window.hpp"
+#include "core/Camera.hpp"
 #include "vulkan/Instance.hpp"
 #include "vulkan/Device.hpp"
 #include "vulkan/Swapchain.hpp"
@@ -41,20 +42,45 @@ int main(int argc, char* argv[]) {
                 cout << "Loaded model: " << modelPath << endl;
             }
 
-            cout << "Press ESC to exit." << endl;
+            // Create camera at a good viewing position
+            core::Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
 
-            auto startTime = chrono::high_resolution_clock::now();
+            cout << "Controls: WASD to move, Click+Drag to look, Space/Shift for up/down, ESC to exit" << endl;
+
+            auto lastTime = chrono::high_resolution_clock::now();
 
             while (!window.shouldClose()) {
                 window.pollEvents();
 
+                // Calculate delta time
                 auto currentTime = chrono::high_resolution_clock::now();
-                float time = chrono::duration<float>(currentTime - startTime).count();
+                float deltaTime = chrono::duration<float>(currentTime - lastTime).count();
+                lastTime = currentTime;
+
+                // Get input state
+                const auto& input = window.input();
+
+                // Update camera from input
+                if (input.forward) camera.moveForward(deltaTime);
+                if (input.backward) camera.moveForward(-deltaTime);
+                if (input.right) camera.moveRight(deltaTime);
+                if (input.left) camera.moveRight(-deltaTime);
+                if (input.up) camera.moveUp(deltaTime);
+                if (input.down) camera.moveUp(-deltaTime);
+
+                if (input.leftMouseDown) {
+                    camera.rotate(input.mouseDeltaX, -input.mouseDeltaY);
+                }
 
                 VkExtent2D extent = swapchain.extent();
                 float aspect = static_cast<float>(extent.width) / static_cast<float>(extent.height);
 
-                scene.update(time, aspect);
+                renderer::CameraData camData;
+                camData.view = camera.viewMatrix();
+                camData.position = camera.position();
+
+                float time = chrono::duration<float>(currentTime - lastTime).count();
+                scene.update(time, aspect, camData);
 
                 if (renderer.beginFrame()) {
                     auto& cmd = renderer.commandBuffer();

@@ -203,15 +203,15 @@ void Scene::addTriangle() {
     loadedMeshes.push_back(std::move(loadedMesh));
 }
 
-void Scene::update(float time, float aspect) {
-    glm::vec3 camPos = glm::vec3(2.0f, 2.0f, 2.0f);
+void Scene::update(float time, float aspect, const CameraData& camera) {
+    (void)time;  // No longer auto-rotating
 
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    ubo.view = glm::lookAt(camPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    ubo.model = glm::mat4(1.0f);  // Identity - no rotation
+    ubo.view = camera.view;
     ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
     ubo.proj[1][1] *= -1;  // Flip Y for Vulkan
-    ubo.camPos = camPos;
+    ubo.camPos = camera.position;
 
     uniformBuffer->upload(&ubo, sizeof(ubo));
 }

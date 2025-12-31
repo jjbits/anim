@@ -62,6 +62,7 @@ FetchContent_MakeAvailable(SDL3 glm VulkanMemoryAllocator tinygltf)
 set(ANIM_SOURCES
     src/main.cpp
     src/core/Window.cpp
+    src/core/Camera.cpp
     src/vulkan/Instance.cpp
     src/vulkan/Device.cpp
     src/vulkan/Swapchain.cpp
