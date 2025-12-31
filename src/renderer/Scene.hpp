@@ -5,6 +5,7 @@
 #include "ModelLoader.hpp"
 #include "../vulkan/Device.hpp"
 #include "../vulkan/Pipeline.hpp"
+#include "../vulkan/PipelineCache.hpp"
 #include "../vulkan/Buffer.hpp"
 #include "../vulkan/DescriptorSet.hpp"
 #include "../vulkan/CommandPool.hpp"
@@ -50,7 +51,8 @@ private:
     VkRenderPass renderPassRef;
 
     unique_ptr<vulkan::CommandPool> commandPool;
-    unique_ptr<vulkan::Pipeline> pipeline;
+    unique_ptr<vulkan::PipelineCache> pipelineCache;
+    vulkan::Pipeline* currentPipeline = nullptr;
     unique_ptr<vulkan::Buffer> uniformBuffer;
     unique_ptr<vulkan::DescriptorSetLayout> descriptorLayout;
     unique_ptr<vulkan::DescriptorPool> descriptorPool;

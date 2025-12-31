@@ -76,6 +76,7 @@ set(ANIM_SOURCES
     src/vulkan/Image.cpp
     src/vulkan/DescriptorSet.cpp
     src/vulkan/Sampler.cpp
+    src/vulkan/PipelineCache.cpp
     src/renderer/Renderer.cpp
     src/renderer/Mesh.cpp
     src/renderer/ModelLoader.cpp

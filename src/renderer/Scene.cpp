@@ -36,6 +36,7 @@ Scene::Scene(vulkan::Device& device, VkRenderPass renderPass)
     : deviceRef(&device)
     , renderPassRef(renderPass) {
     commandPool = make_unique<vulkan::CommandPool>(device, device.graphicsQueueFamily());
+    pipelineCache = make_unique<vulkan::PipelineCache>(device);
     loadShaders();
     createDefaultTexture();
     createDescriptors();
@@ -132,15 +133,15 @@ void Scene::createPipeline(VkRenderPass renderPass) {
     auto bindingDesc = Vertex::getBindingDescription();
     auto attribDescs = Vertex::getAttributeDescriptions();
 
-    pipeline = make_unique<vulkan::Pipeline>(
-        *deviceRef,
-        renderPass,
-        vertShaderCode,
-        fragShaderCode,
-        vector<VkVertexInputBindingDescription>{bindingDesc},
-        attribDescs,
-        vector<VkDescriptorSetLayout>{descriptorLayout->handle()}
-    );
+    vulkan::PipelineConfig config;
+    config.vertShaderCode = vertShaderCode;
+    config.fragShaderCode = fragShaderCode;
+    config.vertexBindings = {bindingDesc};
+    config.vertexAttribs = attribDescs;
+    config.descriptorLayouts = {descriptorLayout->handle()};
+    config.renderPass = renderPass;
+
+    currentPipeline = &pipelineCache->getPipeline(config);
 }
 
 void Scene::loadModel(const string& path) {
@@ -217,7 +218,7 @@ void Scene::update(float time, float aspect, const CameraData& camera) {
 }
 
 void Scene::render(VkCommandBuffer cmd) {
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->handle());
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->handle());
 
     for (const auto& loadedMesh : loadedMeshes) {
         // Select descriptor set based on material index
@@ -229,7 +230,7 @@ void Scene::render(VkCommandBuffer cmd) {
             ds = defaultDescriptorSet->handle();
         }
 
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->layout(), 0, 1, &ds, 0, nullptr);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->layout(), 0, 1, &ds, 0, nullptr);
         loadedMesh.mesh->draw(cmd);
     }
 }
