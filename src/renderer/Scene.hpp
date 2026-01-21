@@ -41,6 +41,9 @@ public:
     void update(float time, float aspect, const CameraData& camera);
     void render(VkCommandBuffer cmd);
 
+    void toggleWireframe();
+    bool isWireframe() const { return wireframeMode; }
+
 private:
     void loadShaders();
     void createDescriptors();
@@ -67,8 +70,12 @@ private:
     vector<unique_ptr<Texture>> textures;
     vector<LoadedMaterial> materials;
 
-    // Default white texture for meshes without textures
+    // Default texture for materials without specific textures
     unique_ptr<Texture> defaultTexture;
+
+    // Wireframe mode
+    bool wireframeMode = false;
+    vulkan::PipelineConfig pipelineConfig;
 };
 
 } // namespace anim::renderer

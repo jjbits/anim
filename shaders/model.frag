@@ -13,6 +13,13 @@ layout(binding = 0) uniform UniformBufferObject {
     vec3 camPos;
 } ubo;
 
+layout(push_constant) uniform PushConstants {
+    mat4 model;
+    vec4 baseColorFactor;
+    vec4 mrFactors;       // x=metallic, y=roughness
+    vec4 emissiveFactor;
+} pc;
+
 layout(binding = 1) uniform sampler2D baseColorTex;
 layout(binding = 2) uniform sampler2D normalTex;
 layout(binding = 3) uniform sampler2D metallicRoughnessTex;
@@ -78,16 +85,17 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
 }
 
 void main() {
-    // Sample textures
-    vec4 baseColor = texture(baseColorTex, fragUV);
+    // Sample textures and multiply by material factors
+    vec4 baseColor = texture(baseColorTex, fragUV) * pc.baseColorFactor;
     vec3 albedo = pow(baseColor.rgb, vec3(2.2)); // sRGB to linear
 
-    vec2 metallicRoughness = texture(metallicRoughnessTex, fragUV).bg; // G=roughness, B=metallic
-    float metallic = metallicRoughness.x;
-    float roughness = metallicRoughness.y;
+    // glTF standard: G=roughness, B=metallic, multiplied by factors
+    vec4 mrSample = texture(metallicRoughnessTex, fragUV);
+    float metallic = mrSample.b * pc.mrFactors.x;
+    float roughness = mrSample.g * pc.mrFactors.y;
 
     float ao = texture(occlusionTex, fragUV).r;
-    vec3 emissive = texture(emissiveTex, fragUV).rgb;
+    vec3 emissive = texture(emissiveTex, fragUV).rgb * pc.emissiveFactor.rgb;
 
     // Sample normal map and transform to world space
     vec3 geomNormal = normalize(fragNormal);

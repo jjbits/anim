@@ -57,9 +57,12 @@ Window& Window::operator=(Window&& other) noexcept {
 }
 
 void Window::pollEvents() {
-    // Reset mouse delta each frame
+    // Reset per-frame input state
     inputState.mouseDeltaX = 0.0f;
     inputState.mouseDeltaY = 0.0f;
+    inputState.scrollDelta = 0.0f;
+    inputState.toggleCameraMode = false;
+    inputState.toggleWireframe = false;
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -78,6 +81,12 @@ void Window::pollEvents() {
                 if (event.key.key == SDLK_D) inputState.right = true;
                 if (event.key.key == SDLK_SPACE) inputState.up = true;
                 if (event.key.key == SDLK_LSHIFT) inputState.down = true;
+                if (event.key.key == SDLK_TAB && !event.key.repeat) {
+                    inputState.toggleCameraMode = true;
+                }
+                if (event.key.key == SDLK_I && !event.key.repeat) {
+                    inputState.toggleWireframe = true;
+                }
                 break;
 
             case SDL_EVENT_KEY_UP:
@@ -113,6 +122,11 @@ void Window::pollEvents() {
                     inputState.mouseDeltaX += event.motion.xrel;
                     inputState.mouseDeltaY += event.motion.yrel;
                 }
+                break;
+
+            case SDL_EVENT_MOUSE_WHEEL:
+                // Scroll wheel or trackpad two-finger scroll
+                inputState.scrollDelta += event.wheel.y;
                 break;
 
             case SDL_EVENT_WINDOW_RESIZED:

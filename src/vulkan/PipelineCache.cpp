@@ -27,7 +27,9 @@ bool PipelineConfig::operator==(const PipelineConfig& other) const {
            vertexBindings.size() == other.vertexBindings.size() &&
            vertexAttribs.size() == other.vertexAttribs.size() &&
            descriptorLayouts == other.descriptorLayouts &&
-           renderPass == other.renderPass;
+           pushConstantRanges.size() == other.pushConstantRanges.size() &&
+           renderPass == other.renderPass &&
+           polygonMode == other.polygonMode;
 }
 
 size_t PipelineConfigHash::operator()(const PipelineConfig& config) const {
@@ -37,7 +39,9 @@ size_t PipelineConfigHash::operator()(const PipelineConfig& config) const {
     hashCombine(seed, config.vertexBindings.size());
     hashCombine(seed, config.vertexAttribs.size());
     hashCombine(seed, config.descriptorLayouts.size());
+    hashCombine(seed, config.pushConstantRanges.size());
     hashCombine(seed, reinterpret_cast<size_t>(config.renderPass));
+    hashCombine(seed, static_cast<size_t>(config.polygonMode));
     return seed;
 }
 
@@ -63,7 +67,9 @@ Pipeline& PipelineCache::getPipeline(const PipelineConfig& config) {
         config.fragShaderCode,
         config.vertexBindings,
         config.vertexAttribs,
-        config.descriptorLayouts
+        config.descriptorLayouts,
+        config.pushConstantRanges,
+        config.polygonMode
     );
 
     auto& ref = *pipeline;

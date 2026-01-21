@@ -17,6 +17,13 @@ struct UniformBufferObject {
     float padding; // Align to 16 bytes
 };
 
+struct PushConstants {
+    glm::mat4 model;           // 64 bytes
+    glm::vec4 baseColorFactor; // 16 bytes
+    glm::vec4 mrFactors;       // x=metallic, y=roughness - 16 bytes
+    glm::vec4 emissiveFactor;  // xyz=emissive - 16 bytes
+}; // Total: 112 bytes
+
 static vector<uint32_t> readShaderFile(const string& path) {
     ifstream file(path, ios::ate | ios::binary);
     if (!file.is_open()) {
@@ -49,10 +56,9 @@ void Scene::loadShaders() {
 }
 
 void Scene::createDefaultTexture() {
-    // Create a 1x1 flat normal texture as fallback (RGB = 127, 127, 255 = tangent space "up")
-    // This works for both color (grayish) and normal maps (no perturbation)
-    uint32_t flatNormal = 0xFFFF7F7F;  // ABGR format: A=255, B=255, G=127, R=127
-    defaultTexture = make_unique<Texture>(*deviceRef, *commandPool, 1, 1, &flatNormal);
+    // Create a 1x1 white texture as fallback
+    uint32_t white = 0xFFFFFFFF;
+    defaultTexture = make_unique<Texture>(*deviceRef, *commandPool, 1, 1, &white);
 }
 
 void Scene::createDescriptors() {
@@ -112,7 +118,7 @@ void Scene::createDescriptors() {
     descriptorLayout = make_unique<vulkan::DescriptorSetLayout>(*deviceRef, bindings);
 
     // Descriptor pool - reserve space for multiple materials + 1 default
-    constexpr uint32_t MAX_MATERIALS = 16;
+    constexpr uint32_t MAX_MATERIALS = 256;
     vector<VkDescriptorPoolSize> poolSizes = {
         {.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = MAX_MATERIALS + 1},
         {.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 5 * (MAX_MATERIALS + 1)}
@@ -133,15 +139,28 @@ void Scene::createPipeline(VkRenderPass renderPass) {
     auto bindingDesc = Vertex::getBindingDescription();
     auto attribDescs = Vertex::getAttributeDescriptions();
 
-    vulkan::PipelineConfig config;
-    config.vertShaderCode = vertShaderCode;
-    config.fragShaderCode = fragShaderCode;
-    config.vertexBindings = {bindingDesc};
-    config.vertexAttribs = attribDescs;
-    config.descriptorLayouts = {descriptorLayout->handle()};
-    config.renderPass = renderPass;
+    // Push constants for per-mesh model matrix and material factors
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PushConstants);
 
-    currentPipeline = &pipelineCache->getPipeline(config);
+    pipelineConfig.vertShaderCode = vertShaderCode;
+    pipelineConfig.fragShaderCode = fragShaderCode;
+    pipelineConfig.vertexBindings = {bindingDesc};
+    pipelineConfig.vertexAttribs = attribDescs;
+    pipelineConfig.descriptorLayouts = {descriptorLayout->handle()};
+    pipelineConfig.pushConstantRanges = {pushConstantRange};
+    pipelineConfig.renderPass = renderPass;
+    pipelineConfig.polygonMode = VK_POLYGON_MODE_FILL;
+
+    currentPipeline = &pipelineCache->getPipeline(pipelineConfig);
+}
+
+void Scene::toggleWireframe() {
+    wireframeMode = !wireframeMode;
+    pipelineConfig.polygonMode = wireframeMode ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
+    currentPipeline = &pipelineCache->getPipeline(pipelineConfig);
 }
 
 void Scene::loadModel(const string& path) {
@@ -210,7 +229,7 @@ void Scene::update(float time, float aspect, const CameraData& camera) {
     UniformBufferObject ubo{};
     ubo.model = glm::mat4(1.0f);  // Identity - no rotation
     ubo.view = camera.view;
-    ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+    ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
     ubo.proj[1][1] *= -1;  // Flip Y for Vulkan
     ubo.camPos = camera.position;
 
@@ -231,6 +250,26 @@ void Scene::render(VkCommandBuffer cmd) {
         }
 
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->layout(), 0, 1, &ds, 0, nullptr);
+
+        // Build push constants with model transform and material factors
+        PushConstants pc{};
+        pc.model = loadedMesh.transform;
+
+        if (matIdx >= 0 && matIdx < static_cast<int>(materials.size())) {
+            const auto& mat = materials[matIdx];
+            pc.baseColorFactor = mat.baseColorFactor;
+            pc.mrFactors = glm::vec4(mat.metallicFactor, mat.roughnessFactor, 0.0f, 0.0f);
+            pc.emissiveFactor = glm::vec4(mat.emissiveFactor, 0.0f);
+        } else {
+            pc.baseColorFactor = glm::vec4(1.0f);
+            pc.mrFactors = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);
+            pc.emissiveFactor = glm::vec4(0.0f);
+        }
+
+        vkCmdPushConstants(cmd, currentPipeline->layout(),
+                          VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                          0, sizeof(PushConstants), &pc);
+
         loadedMesh.mesh->draw(cmd);
     }
 }

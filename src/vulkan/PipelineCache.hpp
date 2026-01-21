@@ -19,7 +19,9 @@ struct PipelineConfig {
     vector<VkVertexInputBindingDescription> vertexBindings;
     vector<VkVertexInputAttributeDescription> vertexAttribs;
     vector<VkDescriptorSetLayout> descriptorLayouts;
+    vector<VkPushConstantRange> pushConstantRanges;
     VkRenderPass renderPass;
+    VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
 
     bool operator==(const PipelineConfig& other) const;
 };

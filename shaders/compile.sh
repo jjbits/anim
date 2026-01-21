@@ -26,5 +26,7 @@ echo "Using $COMPILER"
 
 compile triangle.vert triangle.vert.spv
 compile triangle.frag triangle.frag.spv
+compile model.vert model.vert.spv
+compile model.frag model.frag.spv
 
 echo "Shader compilation complete"

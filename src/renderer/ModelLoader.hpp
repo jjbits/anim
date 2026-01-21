@@ -33,6 +33,7 @@ struct LoadedMaterial {
 struct LoadedMesh {
     unique_ptr<Mesh> mesh;
     int materialIndex = -1;  // Index into LoadedModel::materials, -1 if no material
+    glm::mat4 transform{1.0f};  // World transform from node hierarchy
 };
 
 struct LoadedModel {

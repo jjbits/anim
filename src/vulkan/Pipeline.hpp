@@ -17,7 +17,9 @@ public:
              const vector<uint32_t>& fragShaderCode,
              const vector<VkVertexInputBindingDescription>& vertexBindings,
              const vector<VkVertexInputAttributeDescription>& vertexAttribs,
-             const vector<VkDescriptorSetLayout>& descriptorLayouts = {});
+             const vector<VkDescriptorSetLayout>& descriptorLayouts = {},
+             const vector<VkPushConstantRange>& pushConstantRanges = {},
+             VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL);
     ~Pipeline();
 
     // Non-copyable

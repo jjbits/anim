@@ -19,10 +19,13 @@ struct InputState {
     bool right = false;     // D
     bool up = false;        // Space
     bool down = false;      // Shift
+    bool toggleCameraMode = false;  // Tab (single press)
+    bool toggleWireframe = false;   // I (single press)
 
     // Mouse
     float mouseDeltaX = 0.0f;
     float mouseDeltaY = 0.0f;
+    float scrollDelta = 0.0f;     // Scroll wheel / trackpad two-finger scroll for zoom
     bool leftMouseDown = false;   // Left click drag to rotate
     bool rightMouseDown = false;  // Right click drag to pan
 };

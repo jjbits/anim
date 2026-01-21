@@ -43,9 +43,12 @@ int main(int argc, char* argv[]) {
             }
 
             // Create camera at a good viewing position
-            core::Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f);
+            core::Camera camera(glm::vec3(0.0f, 0.0f, 20.0f), -90.0f, 0.0f);
 
-            cout << "Controls: WASD to move, Click+Drag to look, Space/Shift for up/down, ESC to exit" << endl;
+            cout << "Controls:" << endl;
+            cout << "  FPS mode: WASD to move, Click+Drag to look, Space/Shift for up/down" << endl;
+            cout << "  Orbit mode: Click+Drag to orbit, Right+Drag to pan, Scroll to zoom" << endl;
+            cout << "  Tab to toggle camera mode, I for wireframe, ESC to exit" << endl;
 
             auto lastTime = chrono::high_resolution_clock::now();
 
@@ -60,16 +63,41 @@ int main(int argc, char* argv[]) {
                 // Get input state
                 const auto& input = window.input();
 
-                // Update camera from input
-                if (input.forward) camera.moveForward(deltaTime);
-                if (input.backward) camera.moveForward(-deltaTime);
-                if (input.right) camera.moveRight(deltaTime);
-                if (input.left) camera.moveRight(-deltaTime);
-                if (input.up) camera.moveUp(deltaTime);
-                if (input.down) camera.moveUp(-deltaTime);
+                // Toggle camera mode
+                if (input.toggleCameraMode) {
+                    camera.toggleMode();
+                    cout << "Camera mode: " << (camera.mode() == core::CameraMode::FPS ? "FPS" : "Orbit") << endl;
+                }
 
-                if (input.leftMouseDown) {
-                    camera.rotate(input.mouseDeltaX, -input.mouseDeltaY);
+                // Toggle wireframe
+                if (input.toggleWireframe) {
+                    scene.toggleWireframe();
+                    cout << "Wireframe: " << (scene.isWireframe() ? "ON" : "OFF") << endl;
+                }
+
+                // Update camera from input based on mode
+                if (camera.mode() == core::CameraMode::FPS) {
+                    if (input.forward) camera.moveForward(deltaTime);
+                    if (input.backward) camera.moveForward(-deltaTime);
+                    if (input.right) camera.moveRight(deltaTime);
+                    if (input.left) camera.moveRight(-deltaTime);
+                    if (input.up) camera.moveUp(deltaTime);
+                    if (input.down) camera.moveUp(-deltaTime);
+
+                    if (input.leftMouseDown) {
+                        camera.rotate(input.mouseDeltaX, -input.mouseDeltaY);
+                    }
+                } else {
+                    // Orbit mode
+                    if (input.leftMouseDown) {
+                        camera.orbit(-input.mouseDeltaX, input.mouseDeltaY);
+                    }
+                    if (input.rightMouseDown) {
+                        camera.pan(input.mouseDeltaX, input.mouseDeltaY);
+                    }
+                    if (input.scrollDelta != 0.0f) {
+                        camera.zoom(input.scrollDelta);
+                    }
                 }
 
                 VkExtent2D extent = swapchain.extent();
