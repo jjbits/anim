@@ -16,6 +16,7 @@ struct Vertex {
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 uv;
+    glm::vec4 tangent;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription binding{};
@@ -26,7 +27,7 @@ struct Vertex {
     }
 
     static vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
-        vector<VkVertexInputAttributeDescription> attribs(3);
+        vector<VkVertexInputAttributeDescription> attribs(4);
 
         attribs[0].binding = 0;
         attribs[0].location = 0;
@@ -42,6 +43,11 @@ struct Vertex {
         attribs[2].location = 2;
         attribs[2].format = VK_FORMAT_R32G32_SFLOAT;
         attribs[2].offset = offsetof(Vertex, uv);
+
+        attribs[3].binding = 0;
+        attribs[3].location = 3;
+        attribs[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attribs[3].offset = offsetof(Vertex, tangent);
 
         return attribs;
     }

@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 fragPosition;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec2 fragUV;
+layout(location = 3) in vec4 fragTangent;
 
 layout(location = 0) out vec4 outColor;
 
@@ -28,20 +29,14 @@ layout(binding = 5) uniform sampler2D emissiveTex;
 
 const float PI = 3.14159265359;
 
-// Compute TBN matrix from derivatives (when tangents not in vertex data)
-mat3 computeTBN(vec3 N, vec3 pos, vec2 uv) {
-    vec3 dp1 = dFdx(pos);
-    vec3 dp2 = dFdy(pos);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-    float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
-    return mat3(T * invmax, B * invmax, N);
+// Compute TBN matrix from vertex tangent
+mat3 computeTBN(vec3 N, vec3 T, float bitangentSign) {
+    vec3 Tn = normalize(T);
+    vec3 Nn = normalize(N);
+    // Re-orthogonalize tangent with Gram-Schmidt
+    Tn = normalize(Tn - dot(Tn, Nn) * Nn);
+    vec3 B = cross(Nn, Tn) * bitangentSign;
+    return mat3(Tn, B, Nn);
 }
 
 // Normal Distribution Function (GGX/Trowbridge-Reitz)
@@ -87,7 +82,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
 void main() {
     // Sample textures and multiply by material factors
     vec4 baseColor = texture(baseColorTex, fragUV) * pc.baseColorFactor;
-    vec3 albedo = pow(baseColor.rgb, vec3(2.2)); // sRGB to linear
+    vec3 albedo = baseColor.rgb; // SRGB texture format handles linearization
 
     // glTF standard: G=roughness, B=metallic, multiplied by factors
     vec4 mrSample = texture(metallicRoughnessTex, fragUV);
@@ -100,7 +95,7 @@ void main() {
     // Sample normal map and transform to world space
     vec3 geomNormal = normalize(fragNormal);
     vec3 normalMap = texture(normalTex, fragUV).rgb * 2.0 - 1.0;  // [0,1] -> [-1,1]
-    mat3 TBN = computeTBN(geomNormal, fragPosition, fragUV);
+    mat3 TBN = computeTBN(geomNormal, fragTangent.xyz, fragTangent.w);
     vec3 N = normalize(TBN * normalMap);
 
     vec3 V = normalize(ubo.camPos - fragPosition);
@@ -134,7 +129,7 @@ void main() {
     vec3 Lo = (kD * albedo / PI + specular) * lightColor * NdotL;
 
     // Ambient (simple IBL approximation)
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = vec3(0.15) * albedo * ao;
 
     vec3 color = ambient + Lo;
 
@@ -144,8 +139,7 @@ void main() {
     // HDR tone mapping (Reinhard)
     color = color / (color + vec3(1.0));
 
-    // Gamma correction
-    color = pow(color, vec3(1.0 / 2.2));
+    // SRGB framebuffer format handles gamma correction
 
     outColor = vec4(color, baseColor.a);
 }

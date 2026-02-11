@@ -155,9 +155,11 @@ LoadedModel ModelLoader::load(vulkan::Device& device, vulkan::CommandPool& cmdPo
         const uint8_t* positionData = nullptr;
         const uint8_t* normalData = nullptr;
         const uint8_t* texcoordData = nullptr;
+        const uint8_t* tangentData = nullptr;
         size_t positionStride = 0;
         size_t normalStride = 0;
         size_t texcoordStride = 0;
+        size_t tangentStride = 0;
         size_t vertexCount = 0;
 
         // Position (required)
@@ -177,6 +179,15 @@ LoadedModel ModelLoader::load(vulkan::Device& device, vulkan::CommandPool& cmdPo
             const auto& buffer = model.buffers[bufferView.buffer];
             normalData = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
             normalStride = bufferView.byteStride ? bufferView.byteStride : sizeof(float) * 3;
+        }
+
+        // Tangent (optional)
+        if (primitive.attributes.count("TANGENT")) {
+            const auto& accessor = model.accessors[primitive.attributes.at("TANGENT")];
+            const auto& bufferView = model.bufferViews[accessor.bufferView];
+            const auto& buffer = model.buffers[bufferView.buffer];
+            tangentData = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
+            tangentStride = bufferView.byteStride ? bufferView.byteStride : sizeof(float) * 4;
         }
 
         // Texcoord (optional)
@@ -206,6 +217,13 @@ LoadedModel ModelLoader::load(vulkan::Device& device, vulkan::CommandPool& cmdPo
                 vertices[i].uv = vec2(uv[0], uv[1]);
             } else {
                 vertices[i].uv = vec2(0.0f);
+            }
+
+            if (tangentData) {
+                const float* tan = reinterpret_cast<const float*>(tangentData + i * tangentStride);
+                vertices[i].tangent = vec4(tan[0], tan[1], tan[2], tan[3]);
+            } else {
+                vertices[i].tangent = vec4(1.0f, 0.0f, 0.0f, 1.0f);
             }
         }
 
