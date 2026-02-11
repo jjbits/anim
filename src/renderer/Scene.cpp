@@ -51,8 +51,8 @@ Scene::Scene(vulkan::Device& device, VkRenderPass renderPass)
 }
 
 void Scene::loadShaders() {
-    vertShaderCode = readShaderFile("shaders/model.vert.spv");
-    fragShaderCode = readShaderFile("shaders/model.frag.spv");
+    vertShaderCode = readShaderFile(SHADER_DIR "model.vert.spv");
+    fragShaderCode = readShaderFile(SHADER_DIR "model.frag.spv");
 }
 
 void Scene::createDefaultTexture() {

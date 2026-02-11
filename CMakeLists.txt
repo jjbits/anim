@@ -104,6 +104,7 @@ target_link_libraries(anim PRIVATE
 target_compile_definitions(anim PRIVATE
     GLM_FORCE_RADIANS
     GLM_FORCE_DEPTH_ZERO_TO_ONE
+    SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders/"
     $<$<BOOL:${VKENGINE_ENABLE_VALIDATION}>:VKENGINE_ENABLE_VALIDATION>
 )
 
