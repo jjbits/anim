@@ -87,6 +87,9 @@ int main(int argc, char* argv[]) {
                     if (input.leftMouseDown) {
                         camera.rotate(input.mouseDeltaX, -input.mouseDeltaY);
                     }
+                    if (input.scrollDelta != 0.0f) {
+                        camera.adjustFov(input.scrollDelta);
+                    }
                 } else {
                     // Orbit mode
                     if (input.leftMouseDown) {
@@ -100,12 +103,22 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
+                // Handle window resize
+                if (window.wasResized()) {
+                    window.resetResizeFlag();
+                    if (window.width() > 0 && window.height() > 0) {
+                        renderer.handleResize(window.width(), window.height());
+                    }
+                    continue;
+                }
+
                 VkExtent2D extent = swapchain.extent();
                 float aspect = static_cast<float>(extent.width) / static_cast<float>(extent.height);
 
                 renderer::CameraData camData;
                 camData.view = camera.viewMatrix();
                 camData.position = camera.position();
+                camData.fov = camera.fov();
 
                 float time = chrono::duration<float>(currentTime - lastTime).count();
                 scene.update(time, aspect, camData);

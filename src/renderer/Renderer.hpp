@@ -29,6 +29,7 @@ public:
     // Frame management
     bool beginFrame();
     void endFrame();
+    void handleResize(uint32_t width, uint32_t height);
 
     // Accessors
     vulkan::CommandBuffer& commandBuffer() { return *commandBuffers_[imageIndex_]; }

@@ -63,6 +63,25 @@ Swapchain& Swapchain::operator=(Swapchain&& other) noexcept {
     return *this;
 }
 
+void Swapchain::recreate(uint32_t width, uint32_t height) {
+    deviceRef->waitIdle();
+
+    for (auto view : views) {
+        vkDestroyImageView(deviceRef->handle(), view, nullptr);
+    }
+    views.clear();
+
+    VkSwapchainKHR oldSwapchain = swapchain;
+    swapchain = VK_NULL_HANDLE;
+
+    createSwapchain(surfaceRef, width, height, oldSwapchain);
+    createImageViews();
+
+    vkDestroySwapchainKHR(deviceRef->handle(), oldSwapchain, nullptr);
+
+    cout << "Swapchain recreated (" << swapExtent.width << "x" << swapExtent.height << ")" << endl;
+}
+
 VkResult Swapchain::acquireNextImage(VkSemaphore signalSemaphore, uint32_t* imageIndex) {
     return vkAcquireNextImageKHR(
         deviceRef->handle(),
@@ -86,7 +105,7 @@ VkResult Swapchain::present(VkQueue queue, uint32_t imageIndex, VkSemaphore wait
     return vkQueuePresentKHR(queue, &presentInfo);
 }
 
-void Swapchain::createSwapchain(VkSurfaceKHR surface, uint32_t width, uint32_t height) {
+void Swapchain::createSwapchain(VkSurfaceKHR surface, uint32_t width, uint32_t height, VkSwapchainKHR oldSwapchain) {
     VkPhysicalDevice physicalDevice = deviceRef->physicalDevice();
 
     VkSurfaceCapabilitiesKHR capabilities;
@@ -139,7 +158,7 @@ void Swapchain::createSwapchain(VkSurfaceKHR surface, uint32_t width, uint32_t h
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = oldSwapchain;
 
     if (vkCreateSwapchainKHR(deviceRef->handle(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
         throw runtime_error("Failed to create swapchain");

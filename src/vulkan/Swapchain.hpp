@@ -29,11 +29,13 @@ public:
     const vector<VkImageView>& imageViews() const { return views; }
     uint32_t imageCount() const { return static_cast<uint32_t>(views.size()); }
 
+    void recreate(uint32_t width, uint32_t height);
+
     VkResult acquireNextImage(VkSemaphore signalSemaphore, uint32_t* imageIndex);
     VkResult present(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore);
 
 private:
-    void createSwapchain(VkSurfaceKHR surface, uint32_t width, uint32_t height);
+    void createSwapchain(VkSurfaceKHR surface, uint32_t width, uint32_t height, VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
     void createImageViews();
 
     VkSurfaceFormatKHR chooseSurfaceFormat(const vector<VkSurfaceFormatKHR>& formats);

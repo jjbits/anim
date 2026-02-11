@@ -132,6 +132,7 @@ void Window::pollEvents() {
             case SDL_EVENT_WINDOW_RESIZED:
                 windowWidth = static_cast<uint32_t>(event.window.data1);
                 windowHeight = static_cast<uint32_t>(event.window.data2);
+                resized = true;
                 break;
         }
     }

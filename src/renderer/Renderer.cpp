@@ -134,6 +134,13 @@ void Renderer::endFrame() {
     currentFrame_ = (currentFrame_ + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
+void Renderer::handleResize(uint32_t width, uint32_t height) {
+    device_->waitIdle();
+    swapchain_->recreate(width, height);
+    createDepthResources();
+    createFramebuffers();
+}
+
 void Renderer::setClearColor(float r, float g, float b, float a) {
     clearValues_[0].color = {{r, g, b, a}};
 }

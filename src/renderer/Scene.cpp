@@ -229,7 +229,7 @@ void Scene::update(float time, float aspect, const CameraData& camera) {
     UniformBufferObject ubo{};
     ubo.model = glm::mat4(1.0f);  // Identity - no rotation
     ubo.view = camera.view;
-    ubo.proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
+    ubo.proj = glm::perspective(glm::radians(camera.fov), aspect, 0.1f, 1000.0f);
     ubo.proj[1][1] *= -1;  // Flip Y for Vulkan
     ubo.camPos = camera.position;
 

@@ -30,6 +30,7 @@ public:
 
     // FPS mode: look (mouse input)
     void rotate(float deltaYaw, float deltaPitch);
+    void adjustFov(float delta);
 
     // Orbit mode: orbit around target
     void orbit(float deltaYaw, float deltaPitch);
@@ -53,6 +54,7 @@ public:
     float moveSpeed() const { return moveSpeed_; }
     float sensitivity() const { return sensitivity_; }
     float zoomSpeed() const { return zoomSpeed_; }
+    float fov() const { return fov_; }
 
 private:
     void updateVectors();
@@ -80,6 +82,7 @@ private:
     float moveSpeed_ = 2.5f;
     float sensitivity_ = 0.1f;
     float zoomSpeed_ = 0.5f;
+    float fov_ = 45.0f;
     float minDistance_ = 0.5f;
     float maxDistance_ = 100.0f;
 };

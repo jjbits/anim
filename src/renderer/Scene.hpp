@@ -23,6 +23,7 @@ namespace anim::renderer {
 struct CameraData {
     glm::mat4 view;
     glm::vec3 position;
+    float fov = 45.0f;
 };
 
 class Scene {

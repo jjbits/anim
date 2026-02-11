@@ -52,6 +52,8 @@ public:
     uint32_t width() const { return windowWidth; }
     uint32_t height() const { return windowHeight; }
     SDL_Window* handle() const { return window; }
+    bool wasResized() const { return resized; }
+    void resetResizeFlag() { resized = false; }
 
     // Input
     const InputState& input() const { return inputState; }
@@ -61,6 +63,7 @@ private:
     uint32_t windowWidth = 0;
     uint32_t windowHeight = 0;
     bool closeRequested = false;
+    bool resized = false;
 
     InputState inputState;
 };

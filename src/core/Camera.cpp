@@ -27,13 +27,11 @@ void Camera::setMode(CameraMode mode) {
     if (mode_ == mode) return;
 
     if (mode == CameraMode::Orbit) {
-        // Switching to orbit: compute orbit parameters from current position
-        vec3 toCamera = position_ - target_;
-        distance_ = length(toCamera);
-        if (distance_ < minDistance_) distance_ = minDistance_;
+        // Switching to orbit: place target along current look direction
+        target_ = position_ + front_ * distance_;
 
-        // Compute orbit angles from direction
-        vec3 dir = normalize(toCamera);
+        // Compute orbit angles from camera-to-target direction (reversed)
+        vec3 dir = normalize(position_ - target_);
         orbitPitch_ = degrees(asin(dir.y));
         orbitYaw_ = degrees(atan2(dir.z, dir.x));
     } else {
@@ -70,6 +68,11 @@ void Camera::rotate(float deltaYaw, float deltaPitch) {
     pitch_ = std::clamp(pitch_, -89.0f, 89.0f);
 
     updateVectors();
+}
+
+void Camera::adjustFov(float delta) {
+    fov_ -= delta * 2.0f;
+    fov_ = std::clamp(fov_, 1.0f, 120.0f);
 }
 
 void Camera::orbit(float deltaYaw, float deltaPitch) {
